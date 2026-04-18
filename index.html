@@ -481,7 +481,7 @@
     <div class="radio-title">RADIO</div>
     <div class="signal-vis" id="sigvis"></div>
     <div class="station-list">
-      <div class="station-row playing" onclick="selectStation(this,'Mojave Music Radio')"><span class="station-name">Mojave Music Radio</span><span>88.7 FM</span></div>
+      <div class="station-row playing" id="mmr-row" onclick="selectStation(this,'Mojave Music Radio')"><span class="station-name">Mojave Music Radio</span><span>88.7 FM</span></div>
       <div class="station-row" onclick="selectStation(this,'Radio New Vegas')"><span class="station-name">Radio New Vegas</span><span>97.3 FM</span></div>
       <div class="station-row" onclick="selectStation(this,'Enclave Radio')"><span class="station-name">Enclave Radio</span><span>101.1 FM</span></div>
       <div class="station-row" onclick="selectStation(this,'NCR Emergency Radio')"><span class="station-name">NCR Emergency Radio</span><span>103.5 FM</span></div>
@@ -489,13 +489,19 @@
     </div>
     <div class="now-playing">
       <div class="np-label">NOW PLAYING</div>
-      <div class="np-track scrolling" id="np-track">Big Iron — Marty Robbins &nbsp;&nbsp;&nbsp; Mojave Music Radio</div>
+      <div class="np-track scrolling" id="np-track">SELECT A STATION</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center;justify-content:space-between;">
+      <button class="pip-btn" id="btn-playpause" onclick="togglePlay()" style="flex:1">▶ PLAY</button>
+      <button class="pip-btn" id="btn-skip" onclick="skipTrack()" style="flex:1">▶▶ SKIP</button>
     </div>
     <div class="status-bar" style="border-top:1px solid var(--border);margin-top:8px">
-      <div class="status-indicator"><div class="status-dot"></div>SIGNAL STRONG</div>
-      <div>RANGE: 4 MI</div>
+      <div class="status-indicator"><div class="status-dot" id="radio-dot"></div><span id="radio-status">OFF AIR</span></div>
+      <div>88.7 FM</div>
     </div>
   </div>
+
+  <audio id="radio-audio" preload="none"></audio>
 
   <!-- MISC -->
   <div class="panel" id="panel-misc">
@@ -577,17 +583,118 @@
     }
   }
 
-  const tracks = {
-    'Mojave Music Radio': 'Big Iron — Marty Robbins',
+  // ── Mojave Music Radio real audio ──
+  const BASE = 'https://raw.githubusercontent.com/GrayAnt04/PipBoy/main/Mojave%20Music%20Radio/';
+  const SONGS = [
+    { file: '__Big%20Iron%20%2C%20Marty%20Robbins%20%2C%201959%20Vinyl.mp3',       label: 'Big Iron — Marty Robbins' },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20I\'m%20Moving%20Out.mp3',          label: "I'm Moving Out" },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20I\'m%20So%20Blue.mp3',             label: "I'm So Blue" },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20In%20The%20Shadow%20Of%20The%20Valley.mp3', label: 'In The Shadow Of The Valley' },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20It\'s%20A%20Sin%20To%20Tell%20A%20Lie.mp3', label: "It's A Sin To Tell A Lie" },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Its%20A%20Sin.mp3',                label: "It's A Sin" },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Let\'s%20Ride%20Into%20The%20Sunset%20Together.mp3', label: "Let's Ride Into The Sunset Together" },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Lone%20Star.mp3',                  label: 'Lone Star' },
+    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Stars%20Of%20The%20Midnight%20Ranger.mp3', label: 'Stars Of The Midnight Ranger' },
+    { file: 'Fallout%20New%20Vegas%20Soundtrack%20-%20Heartache%20by%20The%20Number%20-%20Guy%20Mitchell.mp3', label: 'Heartache By The Number — Guy Mitchell' },
+    { file: 'Fallout_%20New%20Vegas%20-%20Goin\'%20Under%20-%20Darrell%20Wayne%20Perry%20and%20Tommy%20Smith.mp3', label: "Goin' Under" },
+    { file: 'Fallout_%20New%20Vegas%20-%20Johnny%20Guitar-%20Peggy%20Lee.mp3',      label: 'Johnny Guitar — Peggy Lee' },
+  ];
+
+  const audio = document.getElementById('radio-audio');
+  let queue = [];
+  let currentStation = 'Mojave Music Radio';
+  let isPlaying = false;
+
+  function buildShuffleQueue() {
+    queue = [...SONGS].sort(() => Math.random() - 0.5);
+  }
+
+  function playNext() {
+    if (queue.length === 0) buildShuffleQueue();
+    const song = queue.shift();
+    audio.src = BASE + song.file;
+    audio.load();
+    audio.play().then(() => {
+      isPlaying = true;
+      updateNowPlaying(song.label);
+      updatePlayBtn();
+    }).catch(e => {
+      console.warn('Playback error:', e);
+      document.getElementById('radio-status').textContent = 'LOAD ERROR';
+    });
+  }
+
+  function updateNowPlaying(label) {
+    const el = document.getElementById('np-track');
+    el.textContent = label + '   ·   Mojave Music Radio';
+    el.classList.remove('scrolling');
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add('scrolling');
+  }
+
+  function updatePlayBtn() {
+    document.getElementById('btn-playpause').textContent = isPlaying ? '⏸ PAUSE' : '▶ PLAY';
+    document.getElementById('radio-status').textContent = isPlaying ? 'ON AIR' : 'PAUSED';
+    document.getElementById('radio-dot').classList.toggle('red', !isPlaying);
+  }
+
+  function togglePlay() {
+    if (currentStation !== 'Mojave Music Radio') {
+      showToast('NO AUDIO FOR THIS STATION');
+      return;
+    }
+    if (!audio.src || audio.src === window.location.href) {
+      buildShuffleQueue();
+      playNext();
+    } else if (isPlaying) {
+      audio.pause();
+      isPlaying = false;
+      updatePlayBtn();
+    } else {
+      audio.play();
+      isPlaying = true;
+      updatePlayBtn();
+    }
+  }
+
+  function skipTrack() {
+    if (currentStation !== 'Mojave Music Radio') {
+      showToast('NO AUDIO FOR THIS STATION');
+      return;
+    }
+    audio.pause();
+    buildShuffleQueue(); // re-shuffle on skip for variety
+    playNext();
+    showToast('SKIPPING...');
+  }
+
+  // Auto-advance when a track ends
+  audio.addEventListener('ended', () => { playNext(); });
+
+  const stationLabels = {
     'Radio New Vegas': 'Anything Goes — Cole Porter',
     'Enclave Radio': 'Stars and Stripes Forever',
     'NCR Emergency Radio': '[STATIC] ...TROOPS MOBILIZING...',
     "Caesar's Legion Radio": 'Legate Marching Hymn'
   };
+
   function selectStation(el, name) {
     document.querySelectorAll('.station-row').forEach(r => r.classList.remove('playing'));
     el.classList.add('playing');
-    document.getElementById('np-track').textContent = (tracks[name] || name) + '   —   ' + name;
+    currentStation = name;
+
+    if (name === 'Mojave Music Radio') {
+      document.getElementById('np-track').textContent = 'TUNING IN...';
+      buildShuffleQueue();
+      playNext();
+    } else {
+      audio.pause();
+      isPlaying = false;
+      updatePlayBtn();
+      document.getElementById('np-track').textContent = (stationLabels[name] || name) + '   ·   ' + name;
+      document.getElementById('radio-status').textContent = 'NO AUDIO FEED';
+      document.getElementById('radio-dot').classList.add('red');
+    }
     showToast('TUNED: ' + name.toUpperCase());
   }
 
