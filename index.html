@@ -584,21 +584,21 @@
   }
 
   // ── Mojave Music Radio real audio ──
-  const BASE = 'https://raw.githubusercontent.com/GrayAnt04/PipBoy/main/Mojave%20Music%20Radio/';
-  const SONGS = [
-    { file: '__Big%20Iron%20%2C%20Marty%20Robbins%20%2C%201959%20Vinyl.mp3',                                              label: 'Big Iron — Marty Robbins' },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20I%27m%20Moving%20Out.mp3',                                               label: "I'm Moving Out" },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20I%27m%20So%20Blue.mp3',                                                  label: "I'm So Blue" },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20In%20The%20Shadow%20Of%20The%20Valley.mp3',                              label: 'In The Shadow Of The Valley' },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20It%27s%20A%20Sin%20To%20Tell%20A%20Lie.mp3',                             label: "It's A Sin To Tell A Lie" },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Its%20A%20Sin.mp3',                                                      label: "It's A Sin" },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Let%27s%20Ride%20Into%20The%20Sunset%20Together.mp3',                    label: "Let's Ride Into The Sunset Together" },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Lone%20Star.mp3',                                                        label: 'Lone Star' },
-    { file: 'Fallout%20New%20Vegas%20Radio%20-%20Stars%20Of%20The%20Midnight%20Ranger.mp3',                               label: 'Stars Of The Midnight Ranger' },
-    { file: 'Fallout%20New%20Vegas%20Soundtrack%20-%20Heartache%20by%20The%20Number%20-%20Guy%20Mitchell.mp3',            label: 'Heartache By The Number — Guy Mitchell' },
-    { file: 'Fallout_%20New%20Vegas%20-%20Goin%27%20Under%20-%20Darrell%20Wayne%20Perry%20and%20Tommy%20Smith.mp3',       label: "Goin' Under" },
-    { file: 'Fallout_%20New%20Vegas%20-%20Johnny%20Guitar-%20Peggy%20Lee.mp3',                                            label: 'Johnny Guitar — Peggy Lee' },
-  ];
+  const BASE = 'https://cdn.jsdelivr.net/gh/GrayAnt04/PipBoy@main/mohavemusicradio/';
+    const SONGS = [
+      { file: 'bigiron.mp3', label: 'Big Iron — Marty Robbins' },
+      { file: 'goinunder.mp3', label: "Goin' Under" },
+      { file: 'heartachebythenumber.mp3', label: 'Heartache By The Number — Guy Mitchell' },
+      { file: 'immovingout.mp3', label: "I'm Moving Out" },
+      { file: 'imsoblue.mp3', label: "I'm So Blue" },
+      { file: 'intheshadowofavalley.mp3', label: 'In The Shadow Of The Valley' },
+      { file: 'itsasin.mp3', label: "It's A Sin" },
+      { file: 'itsasintotellalie.mp3', label: "It's A Sin To Tell A Lie" },
+      { file: 'johnnyguitar.mp3', label: 'Johnny Guitar — Peggy Lee' },
+      { file: 'letsrideintothesunsettogether.mp3', label: "Let's Ride Into The Sunset Together" },
+      { file: 'lonestar.mp3', label: 'Lone Star' },
+      { file: 'starsofthemidnightrangers.mp3', label: 'Stars Of The Midnight Ranger' }
+    ];
 
   const audio = document.getElementById('radio-audio');
   let queue = [];
